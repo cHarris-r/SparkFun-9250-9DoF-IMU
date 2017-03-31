@@ -19,7 +19,7 @@ uint32_t    g_LastBlinkTime = 0;   /* Used to set LED state */
 
 /* DCM variables */
 MPU9250_DMP imu; 
-float MAG_Heading;
+float g_MAG_Heading;
 float Accel_Vector[3]        = {0, 0, 0}; // Store the acceleration in a vector
 float Gyro_Vector[3]         = {0, 0, 0}; // Store the gyros turn rate in a vector
 float Omega_Vector[3]        = {0, 0, 0}; // Corrected Gyro_Vector data
@@ -63,7 +63,8 @@ void setup() {
 	/* Initialize Baud rate 
 	** NOTE: The master will adaptivly determine baud
 	**       therefore, changing the baud rate here should 
-	**       not change the master code */
+	**       not change the master code 
+	** !!!!  This feature is not active !!!! */
 
 	COMM_PORT.begin(9600); /* Tx Rx pins */
 	LOG_PORT.begin(9600); /* Log output */
@@ -73,7 +74,7 @@ void setup() {
 	f_InitHardware();
 
   /* Initialize the MPU-9250. Should return true on success: */
-  if ( !initIMU() ) 
+  if ( !Init_IMU() ) 
   {
     LOG_PORT.println("Error connecting to MPU-9250");
     while (1) ; // Loop forever if we fail to connect
@@ -81,6 +82,7 @@ void setup() {
   LOG_PORT.println("> IMU Initialized");
   delay(20);
 
+  /* Set the initial accel and gyro vectors */
   imu.updateAccel();
   accel[0] = imu.ax;
   accel[1] = imu.ay;
@@ -89,8 +91,10 @@ void setup() {
   gyro[0] = imu.gx;
   gyro[1] = imu.gy;
   gyro[2] = imu.gz;
-  Reset_Sensor_Fusion();
-  
+
+  /* Set the initial roll/pitch/yaw from 
+  ** initial accel/gyro */
+  f_Reset_Sensor_Fusion(); 
 }
 
 
@@ -128,7 +132,7 @@ void loop()
     if( nBytesIn>0 ){ f_SendData( nBytesIn ); }
 	}
 
-	/* Put Operational Code Here */
+	/* Oproational code */
   imu.updateAccel();
   accel[0] = imu.ax;
   accel[1] = imu.ay;
@@ -137,12 +141,13 @@ void loop()
   gyro[0] = imu.gx;
   gyro[1] = imu.gy;
   gyro[2] = imu.gz;
+
   
-	f_UpdateTime();
-  Matrix_Update();
-  Normalize();
-  Drift_Correction();
-  Euler_Angles();
+	f_Update_Time();
+  f_Matrix_Update();
+  f_Normalize();
+  f_Drift_Correction();
+  f_Euler_Angles();
   
   
 	/* Blink LED 
@@ -151,12 +156,6 @@ void loop()
 	f_BlinkLED();
 } /* End Main Loop */
 
-
-
-
-/*******************************************************************
-** Fucctions *******************************************************
-********************************************************************/
 
 
 

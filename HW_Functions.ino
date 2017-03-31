@@ -1,7 +1,4 @@
 
-
-
-
 /*************************************************
 ** f_InitHardware 
 ** This function sets the LED GPIO 
@@ -21,10 +18,12 @@ void f_InitHardware( void )
 
 
 /*************************************************
-**
-**
+** Init_IMU
+** This function set the IMU parameters
+** This includes things like the SR and the 
+** internal LPF corner. 
 */
-bool initIMU(void)
+bool Init_IMU(void)
 {
   /* imu.begin() should return 0 on success. Will initialize
   ** I2C bus, and reset MPU-9250 to defaults */
