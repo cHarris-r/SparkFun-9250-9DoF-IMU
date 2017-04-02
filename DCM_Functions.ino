@@ -1,9 +1,61 @@
+/*************************************************
+** FILE: DCM_Functions
+** This file contains the DCM filter functions
+** These functions take the accel/magn/gyro data
+** and (via the DCM filter) output filtered 
+** Euler angles.+
+**************************************************/
+
+
+
+/*************************************************
+** UpdateTime
+** Update the time state
+** Delta time (s) is used to determine the state
+** estimate in the filter.
+*/
+void Update_Time( void )
+{
+  float temp; 
+  
+  timestamp_old = timestamp;
+  timestamp     = micros();
+  temp = timestamp - timestamp_old;
+
+  /* This little bit is used to limit the
+  ** SR. However, we don't want to do this in
+  ** Real-time. Instead, we would simply not run the
+  ** DCM ... more to come */
+  //while ( 1000000/(timestamp - timestamp_old) > (SRATE) ) { timestamp = micros(); }
+  
+  if( timestamp_old > 0 ) { G_Dt = (temp / 1000000.0) ; }
+  else { G_Dt = 0; }
+  
+  mydt += (timestamp - timestamp_old);
+}
+
+
+/*************************************************
+** DCM_Filter
+** Call the DCM filter functions
+** These functions apply the DCM filter and 
+** update the yaw/pitch/roll variables (the outputs)
+*/
+void DCM_Filter()
+{
+  Update_Time();
+  Matrix_Update();
+  Normalize();
+  Drift_Correction();
+  Euler_Angles();
+}
 
 /*************************************************
 ** Init_Rotation_Matrix
-** Init rotation matrix using euler angles 
+** Initialize the DCM rotation matrix using 
+** euler angles 
 */
-void f_Init_Rotation_Matrix(float m[3][3], float yaw, float pitch, float roll)
+void Init_Rotation_Matrix(float m[3][3], float yaw, float pitch, float roll)
 {
   float c1 = cos(roll);
   float s1 = sin(roll);
@@ -12,8 +64,8 @@ void f_Init_Rotation_Matrix(float m[3][3], float yaw, float pitch, float roll)
   float c3 = cos(yaw);
   float s3 = sin(yaw);
 
-  // Euler angles, right-handed, intrinsic, XYZ convention
-  // (which means: rotate around body axes Z, Y', X'') 
+  /* Euler angles, right-handed, intrinsic, XYZ convention
+  ** (which means: rotate around body axes Z, Y', X'')  */
   m[0][0] = c2 * c3;
   m[0][1] = c3 * s1 * s2 - c1 * s3;
   m[0][2] = s1 * s3 + c1 * c3 * s2;
@@ -34,7 +86,7 @@ void f_Init_Rotation_Matrix(float m[3][3], float yaw, float pitch, float roll)
 ** Uses estimated mag data
 ** This function is not being used!
 */
-void f_Compass_Heading()
+void Compass_Heading()
 {
   float mag_x;
   float mag_y;
@@ -60,32 +112,6 @@ void f_Compass_Heading()
 
 
 /*************************************************
-** f_UpdateTime
-** Update delta t for the DCM update 
-** algorithm.
-*/
-void f_Update_Time( void )
-{
-  float temp; 
-  
-  timestamp_old = timestamp;
-  timestamp     = micros();
-  temp = timestamp - timestamp_old;
-
-  /* This little bit is used to limit the
-  ** SR. However, we don't want to do this in
-  ** Real-time. Instead, we would simply not run the
-  ** DCM ... more to come */
-  //while ( 1000000/(timestamp - timestamp_old) > (SRATE) ) { timestamp = micros(); }
-  
-  if( timestamp_old > 0 ) { G_Dt = (temp / 1000000.0) ; }
-  else { G_Dt = 0; }
-  
-  mydt += (timestamp - timestamp_old);
-}
-
-
-/*************************************************
 ** Matrix_Update
 ** We set the DCM matrix for this iteration.
 ** We update the states assuming the IMU is 
@@ -94,7 +120,7 @@ void f_Update_Time( void )
 ** Apply the feedback gains from the last iteration
 ** in order to account for any drift.
 */
-void f_Matrix_Update( void )
+void Matrix_Update( void )
 {
   /* Convert the Gyro values to radians
   ** Note: Values read from sensor are fixed point */
@@ -130,7 +156,7 @@ void f_Matrix_Update( void )
 ** After each update in order to keep 
 ** each vector in the DCM orthogonal
 */
-void f_Normalize(void)
+void Normalize(void)
 {
   float error=0;
   float temporary[3][3];
@@ -177,7 +203,7 @@ void f_Normalize(void)
 **       proportional and integral feedback. So, this will not
 **       have an effect until the next iteration!
 */
-void f_Drift_Correction(void)
+void Drift_Correction(void)
 {
   //Compensation the Roll, Pitch drift. 
   static float Scaled_Omega_P[3];
@@ -227,10 +253,7 @@ void f_Drift_Correction(void)
   ** progresses. However, presuming the drift is not constant towards any 
   ** particular direction, this should be ok */
  
-  mag_heading_x = 1;
-  mag_heading_y = 0;
-  errorCourse = (DCM_Matrix[0][0]*mag_heading_y) - (DCM_Matrix[1][0]*mag_heading_x);  /* Calculating YAW error */
-  Vector_Scale( errorYaw, &DCM_Matrix[2][0], errorCourse ); /* Applys the yaw correction to the XYZ rotation of the aircraft, depeding the position. */
+  Vector_Scale( errorYaw, &DCM_Matrix[2][0], DCM_Matrix[0][0] ); /* Applys the yaw correction to the XYZ rotation of the aircraft, depeding the position. */
 
   /* Update the proportional and integral gains per yaw error */
   Vector_Scale( &Scaled_Omega_P[0], &errorYaw[0], Kp_YAW ); /* proportional of YAW. */
@@ -248,7 +271,7 @@ void f_Drift_Correction(void)
 ** DCM[2][:] is essentially a vector describing the
 ** orientation of the IMU in space.\
 */
-void f_Euler_Angles(void)
+void Euler_Angles(void)
 {
   pitch = -f_asin( DCM_Matrix[2][0] ); // A faster asin
   roll  =  f_atan2( DCM_Matrix[2][1], DCM_Matrix[2][2] ); // A faster atan2
@@ -263,7 +286,7 @@ void f_Euler_Angles(void)
 ** I.e. set inital roll/pitch from inital guess
 *       and initialize the DCM arrays.
 */
-void f_Reset_Sensor_Fusion() {
+void Reset_Sensor_Fusion() {
   float temp1[3];
   float temp2[3];
   float xAxis[] = {1.0f, 0.0f, 0.0f};
@@ -286,7 +309,7 @@ void f_Reset_Sensor_Fusion() {
   yaw = 0;
 
   /* Init rotation matrix */
-  f_Init_Rotation_Matrix(DCM_Matrix, yaw, pitch, roll);
+  Init_Rotation_Matrix(DCM_Matrix, yaw, pitch, roll);
 }
 
 
@@ -297,7 +320,7 @@ void f_Reset_Sensor_Fusion() {
 ** reset the roll/pitch values without touching the
 ** DCM filter.
 */
-void f_Set_Sensor_Fusion()
+void Set_Sensor_Fusion()
 {
   float temp1[3];
   float temp2[3];

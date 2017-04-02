@@ -82,19 +82,9 @@ void setup() {
   LOG_PORT.println("> IMU Initialized");
   delay(20);
 
-  /* Set the initial accel and gyro vectors */
-  imu.updateAccel();
-  accel[0] = imu.ax;
-  accel[1] = imu.ay;
-  accel[2] = imu.az;
-  imu.updateGyro();
-  gyro[0] = imu.gx;
-  gyro[1] = imu.gy;
-  gyro[2] = imu.gz;
-
   /* Set the initial roll/pitch/yaw from 
   ** initial accel/gyro */
-  f_Reset_Sensor_Fusion(); 
+  Reset_Sensor_Fusion(); 
 }
 
 
@@ -142,12 +132,12 @@ void loop()
   gyro[1] = imu.gy;
   gyro[2] = imu.gz;
 
-  
-	f_Update_Time();
-  f_Matrix_Update();
-  f_Normalize();
-  f_Drift_Correction();
-  f_Euler_Angles();
+  Read_Sensors();
+	Update_Time();
+  Matrix_Update();
+  Normalize();
+  Drift_Correction();
+  Euler_Angles();
   
   
 	/* Blink LED 

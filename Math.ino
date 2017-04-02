@@ -1,7 +1,17 @@
 
 /*************************************************
+** FILE : Math
+** This file contains all the math helper functions.
+** These functions help compute common functions
+** which are not defined in the standard libraries.
+**************************************************/
+
+
+/*************************************************
 ** Vector_Dot_Product
 ** Computes the dot product of two vectors 
+**   scalar = Vector_Dot_Product( v1[], v2[] )
+**   scalar = <v1,v2>
 */
 float Vector_Dot_Product(const float v1[3], const float v2[3])
 {
@@ -14,6 +24,8 @@ float Vector_Dot_Product(const float v1[3], const float v2[3])
 /*************************************************
 ** Vector_Cross_Product
 ** Computes the cross product of two vectors 
+**   Vector_Cross_Product( out[], v1[], v2[] )
+**   out[] = v1[] x v2[]
 */
 void Vector_Cross_Product(float out[3], const float v1[3], const float v2[3])
 {
@@ -26,8 +38,8 @@ void Vector_Cross_Product(float out[3], const float v1[3], const float v2[3])
 /*************************************************
 ** Vector_Scale
 ** Multiply a vector by a scalar (element-wise)
-** Vector_Scale( B, A, c)
-** B = A.*c
+**   Vector_Scale( out[], v[], scalar)
+**   out[] = v[] .* scalar
 */
 void Vector_Scale(float out[3], const float v[3], float scale)
 {
@@ -37,9 +49,9 @@ void Vector_Scale(float out[3], const float v[3], float scale)
 
 /*************************************************
 ** Vector_Add
-** Adds two vectors 
-** Vector_Add( C, A, B )
-** C = A + B 
+** Adds two vectors element-wise
+**   Vector_Add( out[], v1[], v2[] )
+**   out[] = v1[] + v2[] 
 */
 void Vector_Add(float out[3], const float v1[3], const float v2[3])
 {
@@ -49,9 +61,9 @@ void Vector_Add(float out[3], const float v1[3], const float v2[3])
 
 /*************************************************
 ** Matrix_Multiply
-** Multiply two 3x3 matrices: 
-** Matrix_Multiply( out, a, b )
-** out = a * b 
+** Multiply two 3x3 matrices
+**   Matrix_Multiply( m1[][], m2[][], out[][] )
+**   out = m1 * m2 
 */
 void Matrix_Multiply(const float a[3][3], const float b[3][3], float out[3][3])
 {
@@ -66,10 +78,11 @@ void Matrix_Multiply(const float a[3][3], const float b[3][3], float out[3][3])
 
 
 /*************************************************
+** Matrix_Vector_Multiply
 ** Multiply 3x3 matrix with 3x1 vector
 ** Outputs a 3x1 vector
-** Matrix_Vector_Multiply( a[][], b[], out[] ) 
-** out = a * b 
+**   Matrix_Vector_Multiply( m[][], v[], out[] ) 
+**   out = m * v
 */
 void Matrix_Vector_Multiply(const float a[3][3], const float b[3], float out[3])
 {

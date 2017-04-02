@@ -156,6 +156,7 @@ void f_SendData( int nBytesIn )
 	}
 } /* End f_SendData */
 
+
 /*************************************************
 ** f_SendPacket
 ** This code builds the contiguous byte array 
@@ -253,7 +254,6 @@ void f_WriteFToPacket_s32( unsigned char *Packet, float Input )
   /* Pack the 32 bytes int into a byte array */
   for( i=0; i<nBytes; i++ ) { Packet[i] = ( p_byte[nBytes-1-i] ); }
 }
-
 
 
 /*************************************************

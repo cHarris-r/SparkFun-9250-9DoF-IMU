@@ -1,45 +1,12 @@
 
 /*************************************************
-** f_InitHardware 
-** This function sets the LED GPIO 
-*/
-void f_InitHardware( void )
-{
-	/* Some Log Output (usb) */
-	LOG_PORT.println("> Initializing Hardware");
-		
-	/* Set up LED pin (active-high, default to off) */
-	pinMode(HW_LED_PIN, OUTPUT);
-	digitalWrite(HW_LED_PIN, LOW);
-
-	/* Set up MPU-9250 interrupt input (active-low) */
-	pinMode(MPU9250_INT_PIN, INPUT_PULLUP);
-}
-
-
-/*************************************************
-** Init_IMU
-** This function set the IMU parameters
-** This includes things like the SR and the 
-** internal LPF corner. 
-*/
-bool Init_IMU(void)
-{
-  /* imu.begin() should return 0 on success. Will initialize
-  ** I2C bus, and reset MPU-9250 to defaults */
-  if (imu.begin() != INV_SUCCESS) { return false; }
-
-  /* Initiate accel and gyro sensors only */
-  imu.setSensors(INV_XYZ_ACCEL | INV_XYZ_GYRO);
-
-  /* Configure sensors: */
-  imu.setGyroFSR( IMU_GYRO_FSR );
-  imu.setAccelFSR( IMU_ACCEL_FSR );
-  imu.setLPF( IMU_AG_LPF );
-  imu.setSampleRate( IMU_AG_SAMPLE_RATE );
-  return true; // Return success
-}
-
+** FILE : HW_Functions
+** This file contains functions which are used
+** to asses the internal state of the board.
+** Ideally, we would have functions which can run
+** diagnostics. 
+** All functions should be platform independant 
+**************************************************/
 
 
 
@@ -54,10 +21,16 @@ void f_BlinkLED( void )
   /* We blink every UART_BLINK_RATE millisecods */
   if ( millis() > (g_LastBlinkTime + UART_BLINK_RATE) )
   {
+		/* Log the current states to the debug port */
     Debug_LogOut();
-    
-    LOG_PORT.println("> Blink ...");
+		
+		/* Display number of bytes available on comm port
+		** Com port is used for real-time communication with
+		** connected processor */
     LOG_PORT.println("> # Available on COMM_PORT: " + String(COMM_PORT.available()) );
+		
+		/* Toggle LED */
+    LOG_PORT.println("> Blink ...");
     digitalWrite(HW_LED_PIN, g_LedState);
     g_LedState = !g_LedState;
     g_LastBlinkTime = millis();
