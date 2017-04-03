@@ -66,12 +66,8 @@ void setup() {
 	**       not change the master code 
 	** !!!!  This feature is not active !!!! */
 
-	COMM_PORT.begin(9600); /* Tx Rx pins */
-	LOG_PORT.begin(9600); /* Log output */
-  delay(20);
-
 	/* Initialize the LED GPIO */
-	f_InitHardware();
+	Init_Hardware();
 
   /* Initialize the MPU-9250. Should return true on success: */
   if ( !Init_IMU() ) 

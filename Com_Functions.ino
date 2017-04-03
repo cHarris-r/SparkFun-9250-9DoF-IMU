@@ -1,3 +1,12 @@
+/*************************************************
+** FILE: Com_Functions
+** This file contains the helper functions which 
+** allow us to communicate with either the user
+** (via LOG_PORT) or another processor (via COM_PORT)
+** It handles data packing, command interpretation, 
+** and other such protocol-level operations.
+**************************************************/
+
 
 
 /*************************************************

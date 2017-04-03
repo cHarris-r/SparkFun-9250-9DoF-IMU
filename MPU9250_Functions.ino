@@ -8,24 +8,6 @@
 
 
 /*************************************************
-** f_InitHardware 
-** This function sets the LED GPIO 
-*/
-void f_InitHardware( void )
-{
-  /* Some Log Output (usb) */
-  LOG_PORT.println("> Initializing Hardware");
-    
-  /* Set up LED pin (active-high, default to off) */
-  pinMode(HW_LED_PIN, OUTPUT);
-  digitalWrite(HW_LED_PIN, LOW);
-
-  /* Set up MPU-9250 interrupt input (active-low) */
-  pinMode(MPU9250_INT_PIN, INPUT_PULLUP);
-}
-
-
-/*************************************************
 ** Read_Sensors 
 ** This function reads the sensor registers and
 ** assigns them to the global input vectors
@@ -52,6 +34,9 @@ void Read_Sensors()
 */
 bool Init_IMU(void)
 {
+  /* Set up MPU-9250 interrupt input (active-low) */
+  pinMode(MPU9250_INT_PIN, INPUT_PULLUP);
+  
   /* imu.begin() should return 0 on success. Will initialize
   ** I2C bus, and reset MPU-9250 to defaults */
   if (imu.begin() != INV_SUCCESS) { return false; }
@@ -66,3 +51,6 @@ bool Init_IMU(void)
   imu.setSampleRate( IMU_AG_SAMPLE_RATE );
   return true; // Return success
 }
+
+
+
